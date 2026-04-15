@@ -96,6 +96,11 @@
       });
 
       function loadCart() {
+        var checkedIds = [];
+        $(".cart-check:checked").each(function () {
+          checkedIds.push($(this).data("id"));
+        });
+
         api("/api/cart/list").then(function (list) {
           cartItems = list;
           if (!list.length) {
@@ -106,12 +111,15 @@
           var h = "";
           list.forEach(function (c) {
             var g = c.goods || {};
+            var isChecked = checkedIds.includes(c.id) ? "checked" : "";
             h +=
               '<div class="cart-item"><input type="checkbox" class="cart-check" data-id="' +
               c.id +
               '" data-subtotal="' +
               c.subtotal +
-              '">' +
+              '" ' +
+              isChecked +
+              ">" +
               '<img src="' +
               (g.coverImg || "") +
               '" style="margin-left:12px">' +
@@ -142,6 +150,7 @@
           });
           $("#cartList").html(h);
           bindCheck();
+          calcTotal();
         });
       }
 
@@ -160,11 +169,19 @@
       }
       function calcTotal() {
         var total = 0;
+        var checkedCount = $(".cart-check:checked").length;
+        var totalCount = $(".cart-check").length;
+
         $(".cart-check:checked").each(function () {
           var subtotal = $(this).data("subtotal");
           total += parseFloat(subtotal);
         });
         $("#totalPrice").text("¥" + total.toFixed(2));
+
+        $("#checkAll").prop(
+          "checked",
+          checkedCount > 0 && checkedCount === totalCount,
+        );
       }
 
       function changeQty(id, cur, d) {
