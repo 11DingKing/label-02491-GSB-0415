@@ -48,10 +48,12 @@ public class OrderService {
         order.setRemark(remark);
 
         BigDecimal total = BigDecimal.ZERO;
+        java.util.Map<Long, Goods> goodsMap = new java.util.HashMap<>();
         for (Cart c : carts) {
-            Goods g = c.getGoods();
+            Goods g = goodsDao.selectById(c.getGoodsId());
             if (g == null || g.getStatus() != 1) throw new BizException("商品[" + c.getGoodsId() + "]已下架");
             if (g.getStock() < c.getQuantity()) throw new BizException("商品[" + g.getName() + "]库存不足");
+            goodsMap.put(c.getGoodsId(), g);
             total = total.add(g.getPrice().multiply(BigDecimal.valueOf(c.getQuantity())));
         }
         order.setTotalAmount(total);
@@ -59,7 +61,7 @@ public class OrderService {
 
         // 创建订单项 + 扣库存
         for (Cart c : carts) {
-            Goods g = c.getGoods();
+            Goods g = goodsMap.get(c.getGoodsId());
             OrderItem item = new OrderItem();
             item.setOrderId(order.getId());
             item.setGoodsId(g.getId());
