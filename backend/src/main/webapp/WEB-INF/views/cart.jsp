@@ -98,6 +98,7 @@
       function loadCart() {
         api("/api/cart/list").then(function (list) {
           cartItems = list;
+          refreshCartBadge();
           if (!list.length) {
             $("#cartList,#cartFooter").hide();
             $("#emptyCart").show();
