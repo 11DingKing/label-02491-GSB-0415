@@ -106,6 +106,9 @@
           var h = "";
           list.forEach(function (c) {
             var g = c.goods || {};
+            // 计算商品小计，转换为分避免浮点精度问题
+            var subtotal =
+              Math.round(parseFloat(g.price) * 100 * c.quantity) / 100;
             h +=
               '<div class="cart-item"><input type="checkbox" class="cart-check" data-id="' +
               c.id +
@@ -136,7 +139,7 @@
               c.quantity +
               ',1)">+</button></div>' +
               '<div class="item-price">¥' +
-              (g.price * c.quantity).toFixed(2) +
+              subtotal.toFixed(2) +
               "</div>" +
               '<div class="item-actions"><a href="javascript:;" style="color:#e74c3c" onclick="removeItem(' +
               c.id +
@@ -144,6 +147,8 @@
           });
           $("#cartList").html(h);
           bindCheck();
+          // 重新渲染后自动计算总金额
+          calcTotal();
         });
       }
 
