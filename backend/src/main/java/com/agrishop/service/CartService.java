@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -20,7 +21,14 @@ public class CartService {
     private GoodsDao goodsDao;
 
     public List<Cart> listByUser(Long userId) {
-        return cartDao.selectCartWithGoods(userId);
+        List<Cart> carts = cartDao.selectCartWithGoods(userId);
+        for (Cart cart : carts) {
+            if (cart.getGoods() != null && cart.getGoods().getPrice() != null) {
+                BigDecimal subtotal = cart.getGoods().getPrice().multiply(BigDecimal.valueOf(cart.getQuantity()));
+                cart.setSubtotal(subtotal);
+            }
+        }
+        return carts;
     }
 
     /**

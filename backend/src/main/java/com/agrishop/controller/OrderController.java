@@ -27,6 +27,7 @@ public class OrderController {
     }
 
     @GetMapping("/list")
+    @Log(module = "订单管理", action = "查询订单列表")
     public Result<?> list(HttpServletRequest request,
                           @RequestParam(required = false) Integer status,
                           @RequestParam(defaultValue = "1") int page,
@@ -36,6 +37,7 @@ public class OrderController {
     }
 
     @GetMapping("/{id}")
+    @Log(module = "订单管理", action = "查询订单详情")
     public Result<?> detail(@PathVariable Long id, HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
         String role = (String) request.getAttribute("role");
