@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.agrishop.dao.OperationLogDao">
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO operation_log (operator, module, action, detail, ip)
+        VALUES (#{operator}, #{module}, #{action}, #{detail}, #{ip})
+    </insert>
+    <select id="selectCount" resultType="long">
+        SELECT COUNT(*) FROM operation_log
+    </select>
+    <select id="selectPage" resultType="OperationLog">
+        SELECT * FROM operation_log ORDER BY created_at DESC LIMIT #{offset}, #{size}
+    </select>
+</mapper>

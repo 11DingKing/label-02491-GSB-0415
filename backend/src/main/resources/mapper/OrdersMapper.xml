@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.agrishop.dao.OrdersDao">
+    <select id="selectCount" resultType="long">
+        SELECT COUNT(*) FROM orders
+        <where>
+            <if test="userId != null">AND user_id = #{userId}</if>
+            <if test="status != null">AND status = #{status}</if>
+        </where>
+    </select>
+    <select id="selectPage" resultType="Orders">
+        SELECT * FROM orders
+        <where>
+            <if test="userId != null">AND user_id = #{userId}</if>
+            <if test="status != null">AND status = #{status}</if>
+        </where>
+        ORDER BY created_at DESC LIMIT #{offset}, #{size}
+    </select>
+    <select id="selectAdminCount" resultType="long">
+        SELECT COUNT(*) FROM orders o LEFT JOIN user u ON o.user_id = u.id
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (o.order_no LIKE CONCAT('%',#{keyword},'%') OR u.username LIKE CONCAT('%',#{keyword},'%'))
+            </if>
+            <if test="status != null">AND o.status = #{status}</if>
+        </where>
+    </select>
+    <select id="selectAdminPage" resultType="Orders">
+        SELECT o.*, u.username FROM orders o LEFT JOIN user u ON o.user_id = u.id
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (o.order_no LIKE CONCAT('%',#{keyword},'%') OR u.username LIKE CONCAT('%',#{keyword},'%'))
+            </if>
+            <if test="status != null">AND o.status = #{status}</if>
+        </where>
+        ORDER BY o.created_at DESC LIMIT #{offset}, #{size}
+    </select>
+    <select id="selectById" resultType="Orders">
+        SELECT o.*, u.username FROM orders o LEFT JOIN user u ON o.user_id = u.id WHERE o.id = #{id}
+    </select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO orders (order_no, user_id, receiver_name, receiver_phone, receiver_address,
+                           total_amount, status, pay_method, remark)
+        VALUES (#{orderNo}, #{userId}, #{receiverName}, #{receiverPhone}, #{receiverAddress},
+                #{totalAmount}, #{status}, #{payMethod}, #{remark})
+    </insert>
+    <update id="updateById">
+        UPDATE orders
+        <set>
+            <if test="status != null">status = #{status},</if>
+            <if test="payMethod != null">pay_method = #{payMethod},</if>
+            <if test="payTime != null">pay_time = #{payTime},</if>
+            <if test="shipTime != null">ship_time = #{shipTime},</if>
+            <if test="finishTime != null">finish_time = #{finishTime},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+    <select id="selectTotalCount" resultType="long">
+        SELECT COUNT(*) FROM orders
+    </select>
+    <select id="selectCountByStatus" resultType="long">
+        SELECT COUNT(*) FROM orders WHERE status = #{status}
+    </select>
+</mapper>

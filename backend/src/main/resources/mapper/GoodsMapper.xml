@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.agrishop.dao.GoodsDao">
+    <select id="selectCount" resultType="long">
+        SELECT COUNT(*) FROM goods g
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND g.name LIKE CONCAT('%',#{keyword},'%')
+            </if>
+            <if test="typeId != null">AND g.type_id = #{typeId}</if>
+            <if test="status != null">AND g.status = #{status}</if>
+        </where>
+    </select>
+    <select id="selectPageWithType" resultType="Goods">
+        SELECT g.*, t.name AS type_name FROM goods g
+        LEFT JOIN goods_type t ON g.type_id = t.id
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND g.name LIKE CONCAT('%',#{keyword},'%')
+            </if>
+            <if test="typeId != null">AND g.type_id = #{typeId}</if>
+            <if test="status != null">AND g.status = #{status}</if>
+        </where>
+        ORDER BY g.created_at DESC LIMIT #{offset}, #{size}
+    </select>
+    <select id="selectById" resultType="Goods">
+        SELECT g.*, t.name AS type_name FROM goods g
+        LEFT JOIN goods_type t ON g.type_id = t.id
+        WHERE g.id = #{id}
+    </select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO goods (type_id, name, cover_img, description, price, stock, sales, status)
+        VALUES (#{typeId}, #{name}, #{coverImg}, #{description}, #{price}, #{stock}, #{sales}, #{status})
+    </insert>
+    <update id="updateById">
+        UPDATE goods
+        <set>
+            <if test="typeId != null">type_id = #{typeId},</if>
+            <if test="name != null">name = #{name},</if>
+            <if test="coverImg != null">cover_img = #{coverImg},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="price != null">price = #{price},</if>
+            <if test="stock != null">stock = #{stock},</if>
+            <if test="sales != null">sales = #{sales},</if>
+            <if test="status != null">status = #{status},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+    <delete id="deleteById">
+        DELETE FROM goods WHERE id = #{id}
+    </delete>
+    <update id="deductStock">
+        UPDATE goods SET stock = stock - #{quantity}, sales = sales + #{quantity}
+        WHERE id = #{id} AND stock >= #{quantity}
+    </update>
+    <update id="restoreStock">
+        UPDATE goods SET stock = stock + #{quantity}, sales = GREATEST(sales - #{quantity}, 0)
+        WHERE id = #{id}
+    </update>
+</mapper>
