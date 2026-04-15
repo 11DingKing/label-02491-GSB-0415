@@ -86,7 +86,8 @@
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
     <script src="/static/js/common.js"></script>
     <script>
-      var cartItems = [];
+      var cartItems = [],
+        selectedCartIds = [];
       layui.use(["layer", "form"], function () {
         if (!getToken()) {
           location.href = "/login";
@@ -147,6 +148,10 @@
           });
           $("#cartList").html(h);
           bindCheck();
+          // 恢复之前选中的商品
+          selectedCartIds.forEach(function (id) {
+            $('.cart-check[data-id="' + id + '"]').prop("checked", true);
+          });
           // 重新渲染后自动计算总金额
           calcTotal();
         });
@@ -167,11 +172,13 @@
       }
       function calcTotal() {
         var total = 0;
+        selectedCartIds = [];
         $(".cart-check:checked").each(function () {
           var price = parseFloat($(this).data("price"));
           var qty = parseInt($(this).data("qty"));
           // 转换为分计算避免浮点精度问题
           total += Math.round(price * 100) * qty;
+          selectedCartIds.push($(this).data("id"));
         });
         $("#totalPrice").text("¥" + (total / 100).toFixed(2));
       }
