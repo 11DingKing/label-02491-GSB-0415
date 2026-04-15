@@ -22,4 +22,6 @@ public class Cart {
     private LocalDateTime updatedAt;
     /** 关联商品信息 */
     private Goods goods;
+    /** 非数据库字段：小计金额 */
+    private java.math.BigDecimal subtotal;
 }

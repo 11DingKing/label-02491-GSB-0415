@@ -21,9 +21,11 @@
         <textarea id="remark" placeholder="选填" class="layui-textarea" style="height:60px"></textarea>
     </div>
     <div class="card" style="text-align:right">
+        <div style="margin-bottom:16px">
+            <span>订单总金额：<span id="totalAmount" style="color:#e67e22;font-size:22px;font-weight:bold">¥0.00</span></span>
+        </div>
         <button class="layui-btn layui-btn-lg" style="background:#e67e22" onclick="submitOrder()">提交订单</button>
     </div>
-</div>
 <script src="https://cdn.jsdelivr.net/npm/layui@2.9.8/dist/layui.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
 <script src="/static/js/common.js"></script>
@@ -33,6 +35,7 @@ layui.use('layer', function(){
     if(!getToken()){ location.href='/login'; return; }
     if(!cartIds.length){ layer.msg('请先选择商品'); location.href='/cart'; return; }
     loadAddr();
+    calculateTotal();
 });
 function loadAddr(){
     api('/api/address/list').then(function(list){
@@ -45,6 +48,17 @@ function loadAddr(){
                 +'<div>'+a.receiver+' '+a.phone+'</div><div style="font-size:12px">'+a.province+a.city+a.district+a.detail+'</div></div>';
         });
         $('#addressList').html(h);
+    });
+}
+function calculateTotal(){
+    api('/api/cart/list').then(function(list){
+        var total = 0;
+        list.forEach(function(c){
+            if(cartIds.includes(c.id)){
+                total += parseFloat(c.subtotal);
+            }
+        });
+        $('#totalAmount').text('¥'+total.toFixed(2));
     });
 }
 function selectAddr(el){
