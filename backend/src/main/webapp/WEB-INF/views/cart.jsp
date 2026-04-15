@@ -96,55 +96,59 @@
       });
 
       function loadCart() {
-        api("/api/cart/list").then(function (list) {
-          cartItems = list;
-          refreshCartBadge();
-          if (!list.length) {
-            $("#cartList,#cartFooter").hide();
-            $("#emptyCart").show();
-            return;
-          }
-          var h = "";
-          list.forEach(function (c) {
-            var g = c.goods || {};
-            h +=
-              '<div class="cart-item"><input type="checkbox" class="cart-check" data-id="' +
-              c.id +
-              '" data-price="' +
-              g.price +
-              '" data-qty="' +
-              c.quantity +
-              '">' +
-              '<img src="' +
-              (g.coverImg || "") +
-              '" style="margin-left:12px">' +
-              '<div class="item-info"><div style="font-size:15px">' +
-              g.name +
-              '</div><div style="color:#95a5a6;font-size:13px;margin-top:4px">单价：¥' +
-              g.price +
-              "</div></div>" +
-              '<div style="display:flex;align-items:center;gap:8px"><button class="layui-btn layui-btn-xs" onclick="changeQty(' +
-              c.id +
-              "," +
-              c.quantity +
-              ',-1)">-</button>' +
-              "<span>" +
-              c.quantity +
-              "</span>" +
-              '<button class="layui-btn layui-btn-xs" onclick="changeQty(' +
-              c.id +
-              "," +
-              c.quantity +
-              ',1)">+</button></div>' +
-              '<div class="item-price">¥' +
-              ((g.price * 100 * c.quantity) / 100).toFixed(2) +
-              "</div>" +
-              '<div class="item-actions"><a href="javascript:;" style="color:#e74c3c" onclick="removeItem(' +
-              c.id +
-              ')">删除</a></div></div>';
+        return new Promise(function (resolve) {
+          api("/api/cart/list").then(function (list) {
+            cartItems = list;
+            refreshCartBadge();
+            if (!list.length) {
+              $("#cartList,#cartFooter").hide();
+              $("#emptyCart").show();
+              resolve();
+              return;
+            }
+            var h = "";
+            list.forEach(function (c) {
+              var g = c.goods || {};
+              h +=
+                '<div class="cart-item"><input type="checkbox" class="cart-check" data-id="' +
+                c.id +
+                '" data-price="' +
+                g.price +
+                '" data-qty="' +
+                c.quantity +
+                '">' +
+                '<img src="' +
+                (g.coverImg || "") +
+                '" style="margin-left:12px">' +
+                '<div class="item-info"><div style="font-size:15px">' +
+                g.name +
+                '</div><div style="color:#95a5a6;font-size:13px;margin-top:4px">单价：¥' +
+                g.price +
+                "</div></div>" +
+                '<div style="display:flex;align-items:center;gap:8px"><button class="layui-btn layui-btn-xs" onclick="changeQty(' +
+                c.id +
+                "," +
+                c.quantity +
+                ',-1)">-</button>' +
+                "<span>" +
+                c.quantity +
+                "</span>" +
+                '<button class="layui-btn layui-btn-xs" onclick="changeQty(' +
+                c.id +
+                "," +
+                c.quantity +
+                ',1)">+</button></div>' +
+                '<div class="item-price">¥' +
+                ((g.price * 100 * c.quantity) / 100).toFixed(2) +
+                "</div>" +
+                '<div class="item-actions"><a href="javascript:;" style="color:#e74c3c" onclick="removeItem(' +
+                c.id +
+                ')">删除</a></div></div>';
+            });
+            $("#cartList").html(h);
+            bindCheck();
+            resolve();
           });
-          $("#cartList").html(h);
-          bindCheck();
         });
       }
 
@@ -174,15 +178,37 @@
       function changeQty(id, cur, d) {
         var nq = cur + d;
         if (nq < 1) return;
+        var selectedIds = getSelectedIds();
         apiPut("/api/cart/" + id, { quantity: nq }).then(function () {
-          loadCart();
+          loadCart().then(function () {
+            restoreSelection(selectedIds);
+          });
         });
+      }
+      function getSelectedIds() {
+        var ids = [];
+        $(".cart-check:checked").each(function () {
+          ids.push($(this).data("id"));
+        });
+        return ids;
+      }
+      function restoreSelection(ids) {
+        $(".cart-check").each(function () {
+          var id = $(this).data("id");
+          if (ids.indexOf(id) > -1) {
+            $(this).prop("checked", true);
+          }
+        });
+        calcTotal();
       }
       function removeItem(id) {
         layer.confirm("确定删除？", function (idx) {
+          var selectedIds = getSelectedIds();
           apiDelete("/api/cart/" + id).then(function () {
             layer.close(idx);
-            loadCart();
+            loadCart().then(function () {
+              restoreSelection(selectedIds);
+            });
           });
         });
       }
